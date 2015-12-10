@@ -5,11 +5,13 @@
          db
          lens
          point-free
+         racket/runtime-path
          web-server/servlet
          web-server/servlet-env
          (prefix-in env: "environment.rkt"))
 
-(define query (file->string "query.sql" #:mode 'text))
+(define-runtime-path query-file "query.sql")
+(define query (file->string query-file #:mode 'text))
 
 (define conn
   (mysql-connect #:server env:db-host
