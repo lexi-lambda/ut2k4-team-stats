@@ -38,7 +38,8 @@
               (th "Player 2"))
           . ,(sequence->list (map team->table-row teams))))
 
-(serve/servlet (const (response/xexpr (teams->table teams)))
+(serve/servlet (const (response/xexpr `(html (head (title "Team Duos | UT2004 Stats"))
+                                             (body ,(teams->table teams)))))
                #:servlet-path "/"
                #:port env:port
                #:listen-ip #f
