@@ -21,11 +21,16 @@
 
 (define teams
   (map (thrush vector->immutable-vector
-               #{lens-transform (vector-ref-lens 0) % format-percent})
+               #{lens-transform (vector-ref-lens 0) % format-percent}
+               #{lens-transform (vector-ref-lens 1) % #{from-nullable 0}}
+               #{lens-transform (vector-ref-lens 2) % #{from-nullable 0}})
        (query-rows conn query)))
 
+(define (from-nullable default value)
+  (if (sql-null? value) default value))
+
 (define (format-percent n)
-  (~a (~r (* 100 (string->number (~a n))) #:precision 2) "%"))
+  (~a (~r (* 100 (string->number (~a (from-nullable 0 n)))) #:precision 2) "%"))
 
 (define (team->table-row team)
   `(tr . ,(sequence->list (map (λ (x) `(td ,(~a x))) team))))
