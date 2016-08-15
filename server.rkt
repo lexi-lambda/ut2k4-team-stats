@@ -1,7 +1,6 @@
 #lang curly-fn racket
 
-(require alexis/util/match
-         data/collection
+(require data/collection
          db
          lens
          point-free

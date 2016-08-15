@@ -4,8 +4,7 @@
 (define collection "dream-teams-roster")
 
 (define deps
-  '("alexis-util"
-    "base"
+  '("base"
     "collections"
     "curly-fn"
     "db-lib"
