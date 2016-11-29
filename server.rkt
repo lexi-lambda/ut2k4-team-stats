@@ -1,9 +1,11 @@
-#lang curly-fn racket
+#lang curly-fn racket/base
 
 (require data/collection
          db
          lens
          point-free
+         racket/file
+         racket/format
          racket/runtime-path
          web-server/servlet
          web-server/servlet-env
@@ -13,17 +15,12 @@
 (define query (file->string query-file #:mode 'text))
 
 (define conn
-  (mysql-connect #:server env:db-host
-                 #:user env:db-user
-                 #:password env:db-password
-                 #:database env:db-database))
-
-(define teams
-  (map (thrush vector->immutable-vector
-               #{lens-transform (vector-ref-lens 0) % format-percent}
-               #{lens-transform (vector-ref-lens 1) % #{from-nullable 0}}
-               #{lens-transform (vector-ref-lens 2) % #{from-nullable 0}})
-       (query-rows conn query)))
+  (~> (λ () (mysql-connect #:server env:db-host
+                           #:user env:db-user
+                           #:password env:db-password
+                           #:database env:db-database))
+      connection-pool
+      virtual-connection))
 
 (define (from-nullable default value)
   (if (sql-null? value) default value))
@@ -42,8 +39,17 @@
               (th "Player 2"))
           . ,(sequence->list (map team->table-row teams))))
 
-(serve/servlet (const (response/xexpr `(html (head (title "Team Duos | UT2004 Stats"))
-                                             (body ,(teams->table teams)))))
+(define (serve req)
+  (define teams
+    (map (thrush vector->immutable-vector
+                 #{lens-transform (vector-ref-lens 0) % format-percent}
+                 #{lens-transform (vector-ref-lens 1) % #{from-nullable 0}}
+                 #{lens-transform (vector-ref-lens 2) % #{from-nullable 0}})
+         (query-rows conn query)))
+  (response/xexpr `(html (head (title "Team Duos | UT2004 Stats"))
+                         (body ,(teams->table teams)))))
+
+(serve/servlet serve
                #:servlet-path "/"
                #:port env:port
                #:listen-ip #f

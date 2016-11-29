@@ -5,8 +5,8 @@
 
 (define deps
   '("base"
-    "collections"
-    "curly-fn"
+    "collections-lib"
+    "curly-fn-lib"
     "db-lib"
     "envy"
     "lens"
